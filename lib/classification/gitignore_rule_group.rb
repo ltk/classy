@@ -9,18 +9,15 @@ class Classification
       @loaded_paths = Set[root]
 
       super([
-        ::Classification::Patterns.new('.git', root: '/'),
-        ::Classification::Patterns.new(from_file: ::Classification::GlobalGitignore.path(root: root), root: root),
-        ::Classification::Patterns.new(from_file: "#{root}.git/info/exclude", root: root),
         ::Classification::Patterns.new(from_file: "#{root}#{Classification::DOTFILE_NAME}", root: root)
-      ], false)
+      ], true)
     end
 
     def add_gitignore(dir)
       return if @loaded_paths.include?(dir)
 
       @loaded_paths << dir
-      matcher = ::Classification::Patterns.new(from_file: "#{dir}#{Classification::DOTFILE_NAME}").build_matchers(allow: false)
+      matcher = ::Classification::Patterns.new(from_file: "#{dir}#{Classification::DOTFILE_NAME}").build_matchers(allow: true)
       @matchers += matcher unless !matcher || matcher.empty?
     end
 

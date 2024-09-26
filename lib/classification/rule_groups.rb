@@ -15,18 +15,18 @@ class Classification
       @gitignore_rule_group = ::Classification::GitignoreRuleGroup.new(root)
       @array << @gitignore_rule_group
 
-      @array << ::Classification::RuleGroup.new(::Classification::Patterns.new(ignore_rules, root: root), false).freeze
-      @array << ::Classification::RuleGroup.new(::Classification::Patterns.new(include_rules, root: root), true).freeze
+      @array << ::Classification::RuleGroup.new(::Classification::Patterns.new(include_rules, root: root), false).freeze
+      @array << ::Classification::RuleGroup.new(::Classification::Patterns.new(ignore_rules, root: root), true).freeze
       @array << ::Classification::RuleGroup.new(
         ::Classification::Patterns.new(argv_rules, root: root, format: :expand_path),
-        true
+        false
       ).freeze
 
-      Array(ignore_files).each do |f|
+      Array(include_files).each do |f|
         path = PathExpander.expand_path(f, root)
         @array << ::Classification::RuleGroup.new(::Classification::Patterns.new(from_file: path), false).freeze
       end
-      Array(include_files).each do |f|
+      Array(ignore_files).each do |f|
         path = PathExpander.expand_path(f, root)
         @array << ::Classification::RuleGroup.new(::Classification::Patterns.new(from_file: path), true).freeze
       end
