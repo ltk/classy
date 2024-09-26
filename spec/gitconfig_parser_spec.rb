@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe FastIgnore::GitconfigParser do
+RSpec.describe Classification::GitconfigParser do
   around { |e| within_temp_dir { e.run } }
 
   it 'returns nil for empty file' do
@@ -12,13 +12,13 @@ RSpec.describe FastIgnore::GitconfigParser do
   it 'raises for invalid file' do
     create_file('[', path: '.gitconfig')
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'raises for another invalid file' do
     create_file('x[', path: '.gitconfig')
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'returns nil for nonexistent file' do
@@ -49,40 +49,40 @@ RSpec.describe FastIgnore::GitconfigParser do
   it 'returns value for file with excludesfile' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file with excludesfile after other stuff' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
         mergeoptions = --no-edit
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file with excludesfile before other stuff' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
         mergeoptions = --no-edit
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file with excludesfile after boolean true key' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
         ignoreCase
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file with [core] after other stuff' do
@@ -91,28 +91,28 @@ RSpec.describe FastIgnore::GitconfigParser do
         url = https://github.com/robotdana/fast_ignore.git
         fetch = +refs/heads/*:refs/remotes/origin/*
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file with [core] before other stuff' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
       [remote "origin"]
         url = https://github.com/robotdana/fast_ignore.git
         fetch = +refs/heads/*:refs/remotes/origin/*
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns nil for file with commented excludesfile line' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-      #  excludesfile = ~/.gitignore
+      #  excludesfile = ~/.classification
     GITCONFIG
 
     expect(described_class.parse('.gitconfig')).to eq(nil)
@@ -414,7 +414,7 @@ RSpec.describe FastIgnore::GitconfigParser do
         excludesfile = "~/gitignore
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'raises for file with unclosed quote and no trailing newline' do
@@ -423,7 +423,7 @@ RSpec.describe FastIgnore::GitconfigParser do
         excludesfile = "~/gitignore
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'raises for file with excludesfile after attributesfile with unclosed quote' do
@@ -433,7 +433,7 @@ RSpec.describe FastIgnore::GitconfigParser do
         excludesfile = ~/gitignore
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'raises for file with excludesfile before attributesfile with unclosed quote and no trailing newline' do
@@ -443,7 +443,7 @@ RSpec.describe FastIgnore::GitconfigParser do
         attributesfile = "~/gitattributes
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'raises for file with unclosed quote followed by more stuff' do
@@ -453,7 +453,7 @@ RSpec.describe FastIgnore::GitconfigParser do
         mergeoptions = --no-edit
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'raises for file with quote containing a newline' do
@@ -463,7 +463,7 @@ RSpec.describe FastIgnore::GitconfigParser do
       ignore"
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'raises for file with excludesfile after attributesfile with quoted newline' do
@@ -474,7 +474,7 @@ RSpec.describe FastIgnore::GitconfigParser do
         excludesfile = ~/gitignore
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'raises for file with invalid \ escape' do
@@ -483,7 +483,7 @@ RSpec.describe FastIgnore::GitconfigParser do
         excludesfile = "~/gitignore\\x"
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'raises for file with excludesfile after attributesfile with invalid escape' do
@@ -493,7 +493,7 @@ RSpec.describe FastIgnore::GitconfigParser do
         excludesfile = ~/gitignore
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'returns value for file when included' do
@@ -504,10 +504,10 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file when includeif onbranch' do
@@ -520,10 +520,10 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file when includeif onbranch pattern' do
@@ -536,10 +536,10 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file when includeif onbranch pattern ending in /' do
@@ -552,10 +552,10 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns nil for file when includeif onbranch is not the right branch' do
@@ -568,7 +568,7 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
     expect(described_class.parse('.gitconfig')).to be_nil
@@ -584,7 +584,7 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
     expect(described_class.parse('.gitconfig')).to be_nil
@@ -598,7 +598,7 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
     expect(described_class.parse('.gitconfig')).to be_nil
@@ -613,10 +613,10 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error ::FastIgnore::GitconfigParseError
+    expect { described_class.parse('.gitconfig') }.to raise_error ::Classification::GitconfigParseError
   end
 
   it 'raises for file when includeif nonsense with newline' do
@@ -628,10 +628,10 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error ::FastIgnore::GitconfigParseError
+    expect { described_class.parse('.gitconfig') }.to raise_error ::Classification::GitconfigParseError
   end
 
   it 'raises for file when includeif onbranch with null' do
@@ -642,10 +642,10 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error ::FastIgnore::GitconfigParseError
+    expect { described_class.parse('.gitconfig') }.to raise_error ::Classification::GitconfigParseError
   end
 
   it 'returns value for file when includeif gitdir matches leading **/' do
@@ -656,10 +656,10 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file when includeif gitdir/i matches leading **/' do
@@ -670,10 +670,10 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns value for file when includeif gitdir matches trailing /' do
@@ -684,19 +684,19 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it "doesn't leak the section for file when included" do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
       [include]
         path = .gitconfig_include
-        excludesfile = ~/.gitignore2
+        excludesfile = ~/.classification2
     GITCONFIG
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
@@ -704,23 +704,23 @@ RSpec.describe FastIgnore::GitconfigParser do
         attributesfile = ~/.gitattributes
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'returns the most recent value when included' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
       [include]
         path = .gitconfig_include
     GITCONFIG
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore2
+        excludesfile = ~/.classification2
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore2')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification2')
   end
 
   it 'returns the most recent value after included' do
@@ -729,15 +729,15 @@ RSpec.describe FastIgnore::GitconfigParser do
       [include]
         path = .gitconfig_include
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.gitignore2
+        excludesfile = ~/.classification2
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 
   it 'raises when including itself' do
@@ -746,7 +746,7 @@ RSpec.describe FastIgnore::GitconfigParser do
         path = .gitconfig
     GITCONFIG
 
-    expect { described_class.parse('.gitconfig') }.to raise_error(::FastIgnore::GitconfigParseError)
+    expect { described_class.parse('.gitconfig') }.to raise_error(::Classification::GitconfigParseError)
   end
 
   it 'returns value for file when included nestedly' do
@@ -762,9 +762,9 @@ RSpec.describe FastIgnore::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include_2')
       [core]
-        excludesfile = ~/.gitignore
+        excludesfile = ~/.classification
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.gitignore')
+    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
   end
 end

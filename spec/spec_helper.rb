@@ -3,7 +3,7 @@
 if RUBY_PLATFORM != 'java'
   module Warning # leftovers:allow
     def warn(msg) # leftovers:allow
-      raise msg unless msg.include?('FastIgnore deprecation:')
+      raise msg unless msg.include?('Classification deprecation:')
     end
   end
 end
@@ -16,7 +16,7 @@ FileUtils.rm_rf(File.join(__dir__, '..', 'coverage'))
 require 'bundler/setup'
 
 require 'simplecov' if ENV['COVERAGE']
-require 'fast_ignore'
+require 'classification'
 
 require_relative 'support/temp_dir_helper'
 require_relative 'support/stub_env_helper'

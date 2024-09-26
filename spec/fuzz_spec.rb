@@ -14,33 +14,33 @@ require_relative 'support/fuzz'
 
   ENV.fetch('FUZZ_ITERATIONS', '100').to_i.times do |i|
     it "ignore iteration #{i}" do
-      gitignore = described_class.gitignore(i)
+      gitignore = described_class.classify(i)
       puts gitignore
 
       expect do
-        ::FastIgnore.new(relative: true, gitignore: false, ignore_rules: gitignore)
+        ::Classification.new(relative: true, gitignore: false, ignore_rules: gitignore)
       end.not_to raise_error
     end
   end
 
   ENV.fetch('FUZZ_ITERATIONS', '100').to_i.times do |i|
     it "include iteration #{i}" do
-      gitignore = described_class.gitignore(i)
+      gitignore = described_class.classify(i)
       puts gitignore
 
       expect do
-        ::FastIgnore.new(relative: true, gitignore: false, include_rules: gitignore)
+        ::Classification.new(relative: true, gitignore: false, include_rules: gitignore)
       end.not_to raise_error
     end
   end
 
   ENV.fetch('FUZZ_ITERATIONS', '100').to_i.times do |i|
     it "argv iteration #{i}" do
-      gitignore = described_class.gitignore(i)
+      gitignore = described_class.classify(i)
       puts gitignore
 
       expect do
-        ::FastIgnore.new(relative: true, gitignore: false, argv_rules: gitignore)
+        ::Classification.new(relative: true, gitignore: false, argv_rules: gitignore)
       end.not_to raise_error
     end
   end

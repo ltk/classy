@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-RSpec.describe FastIgnore do
+RSpec.describe Classification do
   around { |e| within_temp_dir { e.run } }
 
   let(:root) { Dir.pwd }
 
   shared_examples 'gitignore: true' do
-    describe 'Patterns read from a .gitignore file in the same directory as the path, or in any parent directory' do
+    describe 'Patterns read from a .classification file in the same directory as the path, or in any parent directory' do
       # (up to the toplevel of the work tree) # we consider root the root
 
       describe 'with patterns in the higher level files being overridden by those in lower level files.' do
@@ -15,26 +15,26 @@ RSpec.describe FastIgnore do
         end
 
         it 'matches files in context by files' do
-          gitignore '**/b/d'
-          gitignore 'b/c', path: 'a/.gitignore'
+          classify '**/b/d'
+          classify 'b/c', path: 'a/.classification'
 
-          expect(subject).not_to match_files('b/c', 'a/.gitignore')
+          expect(subject).not_to match_files('b/c', 'a/.classification')
           expect(subject).to match_files('a/b/d', 'a/b/c', 'b/d')
         end
 
         it 'overrides parent rules in lower level files' do
-          gitignore '**/b/d'
-          gitignore '!b/d', 'b/c', path: 'a/.gitignore'
+          classify '**/b/d'
+          classify '!b/d', 'b/c', path: 'a/.classification'
 
-          expect(subject).not_to match_files('a/b/d', 'b/c', 'a/.gitignore')
+          expect(subject).not_to match_files('a/b/d', 'b/c', 'a/.classification')
           expect(subject).to match_files('a/b/c', 'b/d')
         end
 
         it 'overrides parent negations in lower level files' do
-          gitignore '**/b/*', '!**/b/d'
-          gitignore 'b/d', '!b/c', path: 'a/.gitignore'
+          classify '**/b/*', '!**/b/d'
+          classify 'b/d', '!b/c', path: 'a/.classification'
 
-          expect(subject).not_to match_files('b/d', 'a/b/c', 'a/.gitignore')
+          expect(subject).not_to match_files('b/d', 'a/b/c', 'a/.classification')
           expect(subject).to match_files('b/c', 'a/b/d')
         end
       end
@@ -43,8 +43,8 @@ RSpec.describe FastIgnore do
         before do
           create_file_list 'a/b/c', 'a/b/d', 'b/c', 'b/d'
 
-          gitignore 'b/d'
-          gitignore 'a/b/c', path: '.git/info/exclude'
+          classify 'b/d'
+          classify 'a/b/c', path: '.git/info/exclude'
         end
 
         it 'recognises .git/info/exclude files' do
@@ -55,7 +55,7 @@ RSpec.describe FastIgnore do
     end
 
     it 'ignore .git by default' do
-      create_file_list '.gitignore', '.git/WHATEVER', 'WHATEVER'
+      create_file_list '.classification', '.git/WHATEVER', 'WHATEVER'
 
       expect(subject).to match_files('.git/WHATEVER')
       expect(subject).not_to match_files('WHATEVER')
@@ -66,7 +66,7 @@ RSpec.describe FastIgnore do
     subject { described_class.new(relative: true, **args) }
 
     let(:args) { {} }
-    let(:gitignore_path) { File.join(root, '.gitignore') }
+    let(:gitignore_path) { File.join(root, '.classification') }
 
     it_behaves_like 'gitignore: true'
   end

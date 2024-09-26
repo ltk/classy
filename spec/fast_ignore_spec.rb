@@ -2,9 +2,9 @@
 
 require 'pathname'
 
-RSpec.describe FastIgnore do
+RSpec.describe Classification do
   it 'has a version number' do
-    expect(FastIgnore::VERSION).not_to be nil
+    expect(Classification::VERSION).not_to be nil
   end
 
   describe '.new' do
@@ -30,7 +30,7 @@ RSpec.describe FastIgnore do
       it 'ignores the given gitignore file and returns all files anyway' do
         create_file_list 'foo', 'bar'
 
-        gitignore 'foo', 'bar'
+        classify 'foo', 'bar'
 
         expect(subject).to allow_files('foo', 'bar')
       end
@@ -38,14 +38,14 @@ RSpec.describe FastIgnore do
 
     it 'matches uppercase paths to lowercase patterns' do
       create_file_list 'FOO'
-      gitignore 'foo'
+      classify 'foo'
 
       expect(subject).to match_files('FOO')
     end
 
     it 'matches lowercase paths to uppercase patterns' do
       create_file_list 'foo'
-      gitignore 'FOO'
+      classify 'FOO'
 
       expect(subject).to match_files('foo')
     end
@@ -54,7 +54,7 @@ RSpec.describe FastIgnore do
       before do
         create_file_list 'a/b/c', 'a/b/d', 'b/c', 'b/d'
 
-        gitignore 'b/d'
+        classify 'b/d'
       end
 
       it 'recognises ~/.gitconfig gitignore files' do
@@ -70,19 +70,19 @@ RSpec.describe FastIgnore do
       end
 
       context 'when no global gitignore' do
-        it 'recognises project subdir .gitignore file and no project dir gitignore' do
-          gitignore ''
-          gitignore '/b/c', path: 'a/.gitignore'
-          gitignore 'd', path: 'b/.gitignore'
+        it 'recognises project subdir .classification file and no project dir gitignore' do
+          classify ''
+          classify '/b/c', path: 'a/.classification'
+          classify 'd', path: 'b/.classification'
 
           expect(subject).not_to match_files('a/b/d', 'b/c')
           expect(subject).to match_files('a/b/c', 'b/d')
         end
 
-        it 'recognises project subdir .gitignore file when one is empty when no project dir gitignore' do
-          gitignore ''
-          gitignore '#this is just a comment', path: 'a/.gitignore'
-          gitignore '/d', path: 'a/b/.gitignore'
+        it 'recognises project subdir .classification file when one is empty when no project dir gitignore' do
+          classify ''
+          classify '#this is just a comment', path: 'a/.classification'
+          classify '/d', path: 'a/b/.classification'
 
           expect(subject).not_to match_files('b/c', 'a/b/c', 'b/d', 'b/d')
           expect(subject).to match_files('a/b/d')
@@ -104,10 +104,10 @@ RSpec.describe FastIgnore do
     end
 
     context 'when ignore_files is outside root' do
-      let(:args) { { root: 'a', ignore_files: '../.gitignore' } }
+      let(:args) { { root: 'a', ignore_files: '../.classification' } }
 
       it 'copes fine' do
-        gitignore 'a/b'
+        classify 'a/b'
         create_file_list 'a/b', 'b/c', 'a/d'
         expect(subject).not_to match_files('d')
         expect(subject).to match_files('b')
@@ -115,9 +115,9 @@ RSpec.describe FastIgnore do
     end
 
     it 'returns hidden files' do
-      create_file_list '.gitignore', '.a', '.b/.c'
+      create_file_list '.classification', '.a', '.b/.c'
 
-      expect(subject).to allow_exactly('.gitignore', '.a', '.b/.c')
+      expect(subject).to allow_exactly('.classification', '.a', '.b/.c')
     end
 
     it '#allowed? returns false nonexistent files' do
@@ -150,7 +150,7 @@ RSpec.describe FastIgnore do
     end
 
     it "#allowed? won't be confused by caching dirs as non dirs" do
-      gitignore 'a/'
+      classify 'a/'
 
       expect(subject.allowed?('a', exists: true)).to be true
       expect(subject.allowed?('a/b', exists: true)).to be false
@@ -160,9 +160,9 @@ RSpec.describe FastIgnore do
       let(:args) { { gitignore: false } }
 
       it 'returns hidden files' do
-        create_file_list '.gitignore', '.a', '.b/.c'
+        create_file_list '.classification', '.a', '.b/.c'
 
-        expect(subject).to allow_exactly('.gitignore', '.a', '.b/.c')
+        expect(subject).to allow_exactly('.classification', '.a', '.b/.c')
       end
 
       it '#allowed? returns false nonexistent files' do
@@ -210,79 +210,79 @@ RSpec.describe FastIgnore do
     end
 
     it 'rescues soft links to nowhere' do
-      create_file_list 'foo_target', '.gitignore'
+      create_file_list 'foo_target', '.classification'
       create_symlink('foo' => 'foo_target')
       FileUtils.rm('foo_target')
 
       expect(subject).not_to be_allowed('foo')
       expect(subject).not_to be_allowed('foo', directory: true)
-      expect(subject.select { |x| File.read(x) }.to_a).to contain_exactly('.gitignore')
+      expect(subject.select { |x| File.read(x) }.to_a).to contain_exactly('.classification')
     end
 
     it 'rescues soft link loops' do
-      create_file_list 'foo_target', '.gitignore'
+      create_file_list 'foo_target', '.classification'
       create_symlink('foo' => 'foo_target')
       FileUtils.rm('foo_target')
       create_symlink('foo_target' => 'foo')
 
       expect(subject).not_to be_allowed('foo')
       expect(subject).not_to be_allowed('foo', directory: true)
-      expect(subject.select { |x| File.read(x) }.to_a).to contain_exactly('.gitignore')
+      expect(subject.select { |x| File.read(x) }.to_a).to contain_exactly('.classification')
     end
 
     it 'allows soft links to directories' do
-      create_file_list 'foo_target/foo_child', '.gitignore'
-      gitignore 'foo_target'
+      create_file_list 'foo_target/foo_child', '.classification'
+      classify 'foo_target'
 
       create_symlink('foo' => 'foo_target')
-      expect(subject).to allow_exactly('foo', '.gitignore')
+      expect(subject).to allow_exactly('foo', '.classification')
     end
 
     it 'allows soft links' do
-      create_file_list 'foo_target', '.gitignore'
+      create_file_list 'foo_target', '.classification'
       create_symlink('foo' => 'foo_target')
 
-      expect(subject).to allow_exactly('foo', 'foo_target', '.gitignore')
+      expect(subject).to allow_exactly('foo', 'foo_target', '.classification')
     end
 
     context 'with follow_symlinks: true' do
       let(:args) { { follow_symlinks: true } }
 
       it 'ignores soft links to nowhere' do
-        create_file_list 'foo_target', '.gitignore'
+        create_file_list 'foo_target', '.classification'
         create_symlink('foo' => 'foo_target')
         FileUtils.rm('foo_target')
 
         expect(subject).not_to allow_files('foo', 'foo_target')
-        expect(subject).to allow_files('.gitignore')
+        expect(subject).to allow_files('.classification')
       end
 
       context 'with gitignore: false' do
         let(:args) { { follow_symlinks: true, gitignore: false } }
 
         it 'ignores soft links to nowhere' do
-          create_file_list 'foo_target', '.gitignore'
+          create_file_list 'foo_target', '.classification'
           create_symlink('foo' => 'foo_target')
           FileUtils.rm('foo_target')
 
           expect(subject).not_to allow_files('foo', 'foo_target')
-          expect(subject).to allow_files('.gitignore')
+          expect(subject).to allow_files('.classification')
         end
       end
 
       it 'allows soft links to directories' do
-        create_file_list 'foo_target/foo_child', '.gitignore'
-        gitignore 'foo_target'
+        create_file_list 'foo_target/foo_child', '.classification'
+        classify 'foo_target'
 
         create_symlink('foo' => 'foo_target')
-        expect(subject).to allow_exactly('foo/foo_child', '.gitignore')
+        expect(subject).to allow_exactly('foo/foo_child', '.classification')
       end
 
       it 'allows soft links' do
-        create_file_list 'foo_target', '.gitignore'
+        create_file_list 'foo_target', '.classification'
         create_symlink('foo' => 'foo_target')
 
-        expect(subject).to allow_exactly('foo', 'foo_target', '.gitignore')
+        expect(subject).to allow_exactly('foo', 'foo_target', '.classification')
       end
     end
 
@@ -291,7 +291,7 @@ RSpec.describe FastIgnore do
 
       it 'reads the non-gitignore file' do
         create_file_list 'foo', 'bar', 'baz'
-        gitignore 'bar'
+        classify 'bar'
         create_file 'foo', path: 'fancyignore'
 
         expect(subject).not_to allow_files('foo')
@@ -304,7 +304,7 @@ RSpec.describe FastIgnore do
 
       it 'reads the non-gitignore file and the gitignore file' do
         create_file_list 'foo', 'bar', 'baz'
-        gitignore 'bar'
+        classify 'bar'
         create_file 'foo', path: 'fancyignore'
 
         expect(subject).not_to allow_files('foo', 'bar')
@@ -317,7 +317,7 @@ RSpec.describe FastIgnore do
 
       it 'reads the list of rules' do
         create_file_list 'foo', 'bar', 'baz'
-        gitignore 'bar'
+        classify 'bar'
 
         expect(subject).not_to allow_files('foo')
         expect(subject).to allow_files('bar', 'baz')
@@ -330,7 +330,7 @@ RSpec.describe FastIgnore do
       it 'reads the list of rules and gitignore' do
         create_file_list 'foo', 'bar', 'baz'
 
-        gitignore 'bar'
+        classify 'bar'
 
         expect(subject).not_to allow_files('foo', 'bar')
         expect(subject).to allow_files('baz')
@@ -343,7 +343,7 @@ RSpec.describe FastIgnore do
       it 'reads the list of rules and gitignore' do
         create_file_list 'foo', 'bar', 'baz'
 
-        gitignore 'bar'
+        classify 'bar'
 
         expect(subject).not_to allow_files('foo', 'bar')
         expect(subject).to allow_files('baz')
@@ -352,7 +352,7 @@ RSpec.describe FastIgnore do
       it 'responds to to_proc shenanigans' do
         create_file_list 'foo', 'bar', 'baz'
 
-        gitignore 'bar'
+        classify 'bar'
 
         expect(['foo', 'bar', 'baz'].map(&subject)).to eq [false, false, true]
       end
@@ -364,7 +364,7 @@ RSpec.describe FastIgnore do
       it 'reads the list of rules and gitignore' do
         create_file_list 'foo', 'bar', 'baz'
 
-        gitignore 'bar'
+        classify 'bar'
 
         expect(subject).not_to allow_files('foo', 'bar')
         expect(subject).to allow_files('baz')
@@ -377,7 +377,7 @@ RSpec.describe FastIgnore do
       it 'reads the list of rules and gitignore' do
         create_file_list 'foo/bar', 'baz/bar'
 
-        gitignore 'foo'
+        classify 'foo'
 
         expect(subject).not_to allow_files('foo/bar')
         expect(subject).to allow_files('baz/bar')
@@ -390,7 +390,7 @@ RSpec.describe FastIgnore do
       it 'reads the list of rules and gitignore' do
         create_file_list 'foo/bar/foo', 'foo/bar/baz', 'bar/foo', 'baz'
 
-        gitignore 'bar'
+        classify 'bar'
 
         expect(subject).not_to allow_files('foo/bar/foo', 'foo/bar/baz', 'bar/foo')
         expect(subject).to allow_files('baz')
@@ -403,7 +403,7 @@ RSpec.describe FastIgnore do
       it 'reads the list of rules and gitignore' do
         create_file_list 'foo/baz/foo', 'foo/bar/baz', 'bar/foo', 'baz'
 
-        gitignore 'bar'
+        classify 'bar'
 
         expect(subject).not_to allow_files('baz', 'foo/bar/baz', 'bar/foo')
         expect(subject).to allow_files('foo/baz/foo')
@@ -416,7 +416,7 @@ RSpec.describe FastIgnore do
       it 'reads the list of rules and gitignore' do
         create_file_list 'foo', 'food', 'foe', 'for'
 
-        gitignore 'for'
+        classify 'for'
 
         expect(subject).not_to allow_files('foo', 'for')
         expect(subject).to allow_files('foe', 'food')
@@ -429,7 +429,7 @@ RSpec.describe FastIgnore do
       it 'resolves the paths to the current directory' do
         create_file_list 'foo', 'bar', 'baz'
 
-        gitignore 'bar'
+        classify 'bar'
 
         expect(subject).not_to allow_files('foo', 'bar')
         expect(subject).to allow_files('baz')
@@ -453,7 +453,7 @@ RSpec.describe FastIgnore do
       it 'resolves the paths even when negated' do
         create_file_list 'foo', 'bar', 'baz', 'boo'
 
-        gitignore 'bar'
+        classify 'bar'
 
         expect(subject).not_to allow_files('foo', 'baz', 'bar')
         expect(subject).to allow_files('boo')
@@ -508,10 +508,10 @@ RSpec.describe FastIgnore do
 
       it 'returns relative to the root' do
         create_file_list 'bar/foo', 'bar/baz', 'fez', 'baz/foo', 'baz/baz'
-        gitignore 'baz'
+        classify 'baz'
 
         Dir.chdir('bar') do
-          expect(subject).to allow_exactly('bar/foo', 'fez', '.gitignore')
+          expect(subject).to allow_exactly('bar/foo', 'fez', '.classification')
         end
       end
     end
@@ -602,7 +602,7 @@ RSpec.describe FastIgnore do
 
         create_file_list 'baz', 'baz.rb'
 
-        gitignore 'ignored_foo', 'ignored_bar'
+        classify 'ignored_foo', 'ignored_bar'
 
         expect(subject).to allow_files('sub/foo', 'foo', 'baz.rb', 'Rakefile')
         expect(subject).not_to allow_files(
@@ -756,7 +756,7 @@ RSpec.describe FastIgnore do
 
         create_file_list 'baz', 'baz.rb'
 
-        gitignore 'ignored_bar', 'ignored_foo'
+        classify 'ignored_bar', 'ignored_foo'
 
         expect(subject).to allow_files('sub/foo', 'foo')
         expect(subject).not_to allow_files('ignored_foo', 'bar', 'baz', 'baz.rb', 'ignored_bar/ruby')
@@ -820,7 +820,7 @@ RSpec.describe FastIgnore do
 
         create_file_list 'sub/baz', 'sub/baz.rb'
 
-        gitignore 'ignored_foo', path: 'sub/.gitignore'
+        classify 'ignored_foo', path: 'sub/.classification'
 
         expect(subject).to allow_files('foo')
         expect(subject).not_to allow_files('ignored_foo', 'bar', 'baz', 'baz.rb')
@@ -851,7 +851,7 @@ RSpec.describe FastIgnore do
 
         create_file_list 'baz', 'baz.rb'
 
-        gitignore 'ignored_foo'
+        classify 'ignored_foo'
 
         Dir.mkdir 'level'
         Dir.chdir 'level'
@@ -885,7 +885,7 @@ RSpec.describe FastIgnore do
 
         create_file_list 'baz', 'baz.rb'
 
-        gitignore 'ignored_foo'
+        classify 'ignored_foo'
 
         expect(subject).to allow_files('foo', 'bar')
         expect(subject).not_to allow_files('ignored_foo', 'baz', 'baz.rb')

@@ -6,7 +6,7 @@ module Fuzz
       srand ::RSpec.configuration.seed + iteration
     end
 
-    def gitignore(iteration)
+    def classify(iteration)
       determine(iteration)
 
       build_entry + maybe_newline

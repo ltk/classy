@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe FastIgnore do
+RSpec.describe Classification do
   around { |e| within_temp_dir { e.run } }
 
   let(:root) { Dir.pwd }
@@ -15,19 +15,19 @@ RSpec.describe FastIgnore do
         gitignore
 
         expect(subject).to allow_files('foo', 'bar', 'baz')
-        expect(subject).not_to allow_files('/.gitignore') # files outside root are not allowed
+        expect(subject).not_to allow_files('/.classification') # files outside root are not allowed
       end
 
       # an empty list matches everything for include rules
       # So this uses allow_files instead of match_files
       it 'matches nothing when gitignore only contains newlines' do
-        gitignore "\n\n\n"
+        classify "\n\n\n"
 
         expect(subject).to allow_files('foo', 'bar', 'baz')
       end
 
       it 'matches mentioned files when gitignore includes newlines' do
-        gitignore "\n\n\n\n\nfoo\nbar\n\n\n"
+        classify "\n\n\n\n\nfoo\nbar\n\n\n"
 
         expect(subject).not_to match_files('baz')
         expect(subject).to match_files('foo', 'bar')
@@ -38,7 +38,7 @@ RSpec.describe FastIgnore do
       before { create_file_list '#foo', 'foo' }
 
       it "doesn't match files whose names look like a comment" do
-        gitignore '#foo', 'foo'
+        classify '#foo', 'foo'
 
         expect(subject).not_to match_files('#foo')
         expect(subject).to match_files('foo')
@@ -46,7 +46,7 @@ RSpec.describe FastIgnore do
 
       describe 'Put a backslash ("\") in front of the first hash for patterns that begin with a hash' do
         it 'ignores files whose names look like a comment when prefixed with a backslash' do
-          gitignore '\\#foo'
+          classify '\\#foo'
 
           expect(subject).not_to match_files('foo')
           expect(subject).to match_files('#foo')
@@ -71,34 +71,34 @@ RSpec.describe FastIgnore do
         before { create_file_list 'foo', 'foo\\', 'foo\\\\', '\\\\foo', '\\foo', 'fo\\o/\\foo' }
 
         it "never matches backslashes when they're not in the pattern" do
-          gitignore 'foo'
+          classify 'foo'
 
           expect(unquoted_subject).to match_files('foo')
           expect(unquoted_subject).not_to match_files('foo\\', '\\\\foo', 'foo\\\\', '\\foo', 'fo\\o/\\foo')
         end
 
         it 'matches an escaped backslash at the end of the pattern' do
-          gitignore 'foo\\\\'
+          classify 'foo\\\\'
 
           expect(unquoted_subject).to match_files('foo\\')
           expect(unquoted_subject).not_to match_files('\\\\foo', 'foo', 'fo\\o/\\foo', 'foo\\\\', '\\foo')
         end
 
         it 'never matches a literal backslash at the end of the pattern' do
-          gitignore 'foo\\'
+          classify 'foo\\'
 
           expect(unquoted_subject).not_to match_files('\\\\foo', 'foo\\', 'foo', 'fo\\o/\\foo', 'foo\\\\', '\\foo')
         end
 
         it 'matches an escaped backslash at the start of the pattern' do
-          gitignore '\\\\foo'
+          classify '\\\\foo'
 
           expect(unquoted_subject).to match_files('\\foo', 'fo\\o/\\foo')
           expect(unquoted_subject).not_to match_files('\\\\foo', 'foo\\', 'foo', 'foo\\\\')
         end
 
         it 'matches a literal escaped f at the start of the pattern' do
-          gitignore '\\foo'
+          classify '\\foo'
 
           expect(unquoted_subject).not_to match_files('\\\\foo', 'foo\\', 'fo\\o/\\foo', 'foo\\\\', '\\foo')
           expect(unquoted_subject).to match_files('foo')
@@ -109,34 +109,34 @@ RSpec.describe FastIgnore do
         before { create_file_list 'foo', 'foo ', 'foo  ', 'foo\\' }
 
         it 'ignores trailing spaces in the gitignore file' do
-          gitignore 'foo  '
+          classify 'foo  '
 
           expect(unquoted_subject).not_to match_files('foo  ', 'foo ')
           expect(unquoted_subject).to match_files('foo')
         end
 
         it "doesn't ignore trailing spaces if there's a backslash" do
-          gitignore "foo \\ \n"
+          classify "foo \\ \n"
 
           expect(unquoted_subject).not_to match_files('foo', 'foo ', 'foo\\')
           expect(unquoted_subject).to match_files('foo  ')
         end
 
         it 'considers trailing backslashes to never be matched' do
-          gitignore "foo\\\n"
+          classify "foo\\\n"
 
           expect(unquoted_subject).not_to match_files('foo  ', 'foo ', 'foo', 'foo\\')
         end
 
         it "doesn't ignore trailing spaces if there's a backslash before every space" do
-          gitignore "foo\\ \\ \n"
+          classify "foo\\ \\ \n"
 
           expect(unquoted_subject).not_to match_files('foo', 'foo ', 'foo\\')
           expect(unquoted_subject).to match_files('foo  ')
         end
 
         it "doesn't ignore trailing spaces if there's a backslash before the non last space" do
-          gitignore "foo\\  \n"
+          classify "foo\\  \n"
 
           expect(unquoted_subject).not_to match_files('foo', 'foo  ', 'foo\\')
           expect(unquoted_subject).to match_files('foo ')
@@ -156,14 +156,14 @@ RSpec.describe FastIgnore do
         end
 
         it 'ignores directories but not files or symbolic links that match patterns ending with /' do
-          gitignore 'foo/'
+          classify 'foo/'
 
           expect(subject).not_to match_files('bar/foo', 'baz/foo', 'bar/baz')
           expect(subject).to match_files('foo/bar')
         end
 
         it 'handles this specific edge case i stumbled across' do
-          gitignore "Ȋ/\nfoo/"
+          classify "Ȋ/\nfoo/"
 
           expect(subject).not_to match_files('bar/foo', 'baz/foo', 'bar/baz')
           expect(subject).to match_files('foo/bar')
@@ -172,40 +172,40 @@ RSpec.describe FastIgnore do
     end
 
     # The slash / is used as the directory separator.
-    # Separators may occur at the beginning, middle or end of the .gitignore search pattern.
+    # Separators may occur at the beginning, middle or end of the .classification search pattern.
     describe 'If there is a separator at the beginning or middle (or both) of the pattern' do
       before { create_file_list 'doc/frotz/b', 'a/doc/frotz/c', 'd/doc/frotz' }
 
-      describe 'then the pattern is relative to the directory level of the particular .gitignore file itself.' do
+      describe 'then the pattern is relative to the directory level of the particular .classification file itself.' do
         # For example, a pattern doc/frotz/ matches doc/frotz directory, but not a/doc/frotz directory;
-        # The pattern doc/frotz and /doc/frotz have the same effect in any .gitignore file.
+        # The pattern doc/frotz and /doc/frotz have the same effect in any .classification file.
         # In other words, a leading slash is not relevant if there is already a middle slash in the pattern.
         it 'includes files relative to the git dir with a middle slash' do
-          gitignore 'doc/frotz'
+          classify 'doc/frotz'
 
           expect(subject).to match_files('doc/frotz/b')
           expect(subject).not_to match_files('a/doc/frotz/c', 'd/doc/frotz')
         end
 
         it 'treats a double slash as matching nothing' do
-          gitignore 'doc//frotz'
+          classify 'doc//frotz'
 
           expect(subject).not_to match_files('doc/frotz/b', 'a/doc/frotz/c', 'd/doc/frotz')
         end
       end
 
-      describe 'Otherwise the pattern may also match at any level below the .gitignore level.' do
+      describe 'Otherwise the pattern may also match at any level below the .classification level.' do
         # frotz/ matches frotz and a/frotz that is a directory
 
         it 'includes files relative to anywhere with only an end slash' do
-          gitignore 'frotz/'
+          classify 'frotz/'
 
           expect(subject).to match_files('doc/frotz/b', 'a/doc/frotz/c')
           expect(subject).not_to match_files('d/doc/frotz')
         end
 
         it 'strips trailing space before deciding a rule is dir_only' do
-          gitignore 'frotz/ '
+          classify 'frotz/ '
 
           expect(subject).to match_files('doc/frotz/b', 'a/doc/frotz/c')
           expect(subject).not_to match_files('d/doc/frotz')
@@ -218,20 +218,20 @@ RSpec.describe FastIgnore do
         before { create_file_list 'foo', 'foe' }
 
         it 'includes previously excluded files' do
-          gitignore 'fo*', '!foo'
+          classify 'fo*', '!foo'
 
           expect(subject).not_to match_files('foo')
           expect(subject).to match_files('foe')
         end
 
         it 'is read in order' do
-          gitignore '!foo', 'fo*'
+          classify '!foo', 'fo*'
 
           expect(subject).to match_files('foe', 'foo')
         end
 
         it 'has no effect if not negating anything' do
-          gitignore '!foo'
+          classify '!foo'
 
           expect(subject).not_to match_files('foe', 'foo')
         end
@@ -247,7 +247,7 @@ RSpec.describe FastIgnore do
         it "doesn't negate files inside previously matched directories" do
           create_file_list 'foo/bar', 'foo/foo', 'bar/bar'
 
-          gitignore 'foo', '!foo/bar'
+          classify 'foo', '!foo/bar'
 
           expect(subject).not_to match_files('bar/bar')
           expect(subject).to match_files('foo/foo')
@@ -257,7 +257,7 @@ RSpec.describe FastIgnore do
         it 'does negate files inside previously matched directories/*' do
           create_file_list 'foo/bar/baz', 'foo/baz/baz', 'foo/foo', 'bar/bar'
 
-          gitignore '/foo/*', '!/foo/bar/', '!/foo/baz/'
+          classify '/foo/*', '!/foo/bar/', '!/foo/baz/'
 
           expect(subject).not_to match_files('foo/bar/baz', 'bar/bar', 'foo/baz/baz')
           expect(subject).to match_files('foo/foo')
@@ -266,7 +266,7 @@ RSpec.describe FastIgnore do
         it 'does negate files inside previously matched directories with exact match before the final star' do
           create_file_list 'foo/ba', 'foo/bar/baz', 'foo/baz/baz', 'foo/foo', 'bar/bar'
 
-          gitignore '/foo/ba*', '!/foo/bar/', '!/foo/baz/'
+          classify '/foo/ba*', '!/foo/bar/', '!/foo/baz/'
 
           expect(subject).not_to match_files('foo/bar/baz', 'bar/bar', 'foo/baz/baz', 'foo/foo')
           expect(subject).to match_files('foo/ba')
@@ -278,7 +278,7 @@ RSpec.describe FastIgnore do
         it "doesn't negate files inside previously matched directories/**" do
           create_file_list 'foo/bar/baz', 'foo/baz/baz', 'foo/foo', 'bar/bar'
 
-          gitignore '/foo/**', '!/foo/bar/', '!/foo/baz/'
+          classify '/foo/**', '!/foo/bar/', '!/foo/baz/'
 
           expect(subject).not_to match_files('bar/bar')
           expect(subject).to match_files('foo/foo')
@@ -292,7 +292,7 @@ RSpec.describe FastIgnore do
         before { create_file_list '!important!.txt', 'important!.txt' }
 
         it 'matches files starting with a literal ! if its preceded by a backslash' do
-          gitignore '\!important!.txt'
+          classify '\!important!.txt'
 
           expect(subject).not_to match_files('important!.txt')
           expect(subject).to match_files('!important!.txt')
@@ -306,35 +306,35 @@ RSpec.describe FastIgnore do
           before { create_file_list 'f/our', 'few', 'four', 'fewer', 'favour' }
 
           it "matches any number of characters at the beginning if there's a star" do
-            gitignore '*our'
+            classify '*our'
 
             expect(subject).not_to match_files('few', 'fewer')
             expect(subject).to match_files('f/our', 'four', 'favour')
           end
 
           it "matches any number of characters at the beginning if there's a star followed by a slash" do
-            gitignore '*/our'
+            classify '*/our'
 
             expect(subject).not_to match_files('few', 'fewer', 'four', 'favour')
             expect(subject).to match_files('f/our')
           end
 
           it "doesn't match a slash" do
-            gitignore 'f*our'
+            classify 'f*our'
 
             expect(subject).not_to match_files('few', 'fewer', 'f/our')
             expect(subject).to match_files('four', 'favour')
           end
 
           it "matches any number of characters in the middle if there's a star" do
-            gitignore 'f*r'
+            classify 'f*r'
 
             expect(subject).not_to match_files('f/our', 'few')
             expect(subject).to match_files('four', 'fewer', 'favour')
           end
 
           it "matches any number of characters at the end if there's a star" do
-            gitignore 'few*'
+            classify 'few*'
 
             expect(subject).not_to match_files('f/our', 'four', 'favour')
             expect(subject).to match_files('few', 'fewer')
@@ -345,63 +345,63 @@ RSpec.describe FastIgnore do
           before { create_file_list 'a/b/c', 'a/b/d', 'a/c/c', 'a/c/d', 'b/b/c', 'b/b/d', 'b/c/c', 'b/c/d' }
 
           it 'matches a whole directory' do
-            gitignore 'a/*/c'
+            classify 'a/*/c'
 
             expect(subject).to match_files('a/b/c', 'a/c/c')
             expect(subject).not_to match_files('a/b/d', 'a/c/d', 'b/b/c', 'b/b/d', 'b/c/c', 'b/c/d')
           end
 
           it 'matches an exact partial match at start' do
-            gitignore 'a/b*/c'
+            classify 'a/b*/c'
 
             expect(subject).to match_files('a/b/c')
             expect(subject).not_to match_files('a/b/d', 'a/c/c', 'a/c/d', 'b/b/c', 'b/b/d', 'b/c/c', 'b/c/d')
           end
 
           it 'matches an exact partial match at end' do
-            gitignore 'a/*b/c'
+            classify 'a/*b/c'
 
             expect(subject).to match_files('a/b/c')
             expect(subject).not_to match_files('a/b/d', 'a/c/c', 'a/c/d', 'b/b/c', 'b/b/d', 'b/c/c', 'b/c/d')
           end
 
           it 'matches multiple directories when sequential /*/' do
-            gitignore 'a/*/*'
+            classify 'a/*/*'
 
             expect(subject).to match_files('a/b/c', 'a/b/d', 'a/c/c', 'a/c/d')
             expect(subject).not_to match_files('b/b/c', 'b/b/d', 'b/c/c', 'b/c/d')
           end
 
           it 'matches multiple directories when beginning sequential /*/' do
-            gitignore '*/*/c'
+            classify '*/*/c'
 
             expect(subject).to match_files('b/b/c', 'a/b/c', 'a/c/c', 'b/c/c')
             expect(subject).not_to match_files('a/b/d', 'a/c/d', 'b/b/d', 'b/c/d')
           end
 
           it 'matches multiple directories when ending with /**/*/' do
-            gitignore 'a/**/*'
+            classify 'a/**/*'
 
             expect(subject).to match_files('a/b/c', 'a/b/d', 'a/c/c', 'a/c/d')
             expect(subject).not_to match_files('b/b/c', 'b/b/d', 'b/c/c', 'b/c/d')
           end
 
           it 'matches multiple directories when ending with **/*/' do
-            gitignore 'a**/*'
+            classify 'a**/*'
 
             expect(subject).to match_files('a/b/c', 'a/b/d', 'a/c/c', 'a/c/d')
             expect(subject).not_to match_files('b/b/c', 'b/b/d', 'b/c/c', 'b/c/d')
           end
 
           it 'matches multiple directories when beginning with **/*/' do
-            gitignore '**/*/c'
+            classify '**/*/c'
 
             expect(subject).to match_files('b/b/c', 'a/b/c', 'a/c/c', 'b/c/c', 'a/c/d', 'b/c/d')
             expect(subject).not_to match_files('a/b/d', 'b/b/d')
           end
 
           it 'matches multiple directories when beginning with **/*' do
-            gitignore '**/*c'
+            classify '**/*c'
 
             expect(subject).to match_files('b/b/c', 'a/b/c', 'a/c/c', 'b/c/c', 'a/c/d', 'b/c/d')
             expect(subject).not_to match_files('a/b/d', 'b/b/d')
@@ -413,28 +413,28 @@ RSpec.describe FastIgnore do
         before { create_file_list 'four', 'fouled', 'fear', 'tour', 'flour', 'favour', 'fa/our', 'foul' }
 
         it "matches any number of characters at the beginning if there's a star" do
-          gitignore '?our'
+          classify '?our'
 
           expect(subject).not_to match_files('fouled', 'fear', 'favour', 'fa/our', 'foul')
           expect(subject).to match_files('tour', 'four')
         end
 
         it "doesn't match a slash" do
-          gitignore 'fa?our'
+          classify 'fa?our'
 
           expect(subject).not_to match_files('fouled', 'fear', 'tour', 'four', 'fa/our', 'foul')
           expect(subject).to match_files('favour')
         end
 
         it 'matches per ?' do
-          gitignore 'f??r'
+          classify 'f??r'
 
           expect(subject).not_to match_files('fouled', 'tour', 'favour', 'fa/our', 'foul')
           expect(subject).to match_files('four', 'fear')
         end
 
         it "matches a single character at the end if there's a ?" do
-          gitignore 'fou?'
+          classify 'fou?'
 
           expect(subject).not_to match_files('fouled', 'fear', 'tour', 'favour', 'fa/our')
           expect(subject).to match_files('foul', 'four')
@@ -451,133 +451,133 @@ RSpec.describe FastIgnore do
         end
 
         it 'matches a single character in a character class' do
-          gitignore 'a[ab]'
+          classify 'a[ab]'
 
           expect(subject).not_to match_files('ac', 'ad', 'a[')
           expect(subject).to match_files('ab', 'aa')
         end
 
         it 'matches a single character in a character class range' do
-          gitignore 'a[a-c]'
+          classify 'a[a-c]'
 
           expect(subject).not_to match_files('ad')
           expect(subject).to match_files('ab', 'aa', 'ab', 'ac')
         end
 
         it 'treats a backward character class range as only the first character of the range' do
-          gitignore 'a[d-a]'
+          classify 'a[d-a]'
 
           expect(subject).to match_files('ad')
           expect(subject).not_to match_files('aa', 'ac', 'ab', 'a-')
         end
 
         it 'treats a negated backward character class range as only the first character of the range' do
-          gitignore 'a[^d-a]'
+          classify 'a[^d-a]'
 
           expect(subject).not_to match_files('ad')
           expect(subject).to match_files('aa', 'ac', 'ab', 'a-')
         end
 
         it 'treats a escaped backward character class range as only the first character of the range' do
-          gitignore 'a[\\]-\\[]'
+          classify 'a[\\]-\\[]'
 
           expect(subject).to match_files('a]')
           expect(subject).not_to match_files('a[')
         end
 
         it 'treats a negated escaped backward character class range as only the first character of the range' do
-          gitignore 'a[^\\]-\\[]'
+          classify 'a[^\\]-\\[]'
 
           expect(subject).not_to match_files('a]')
           expect(subject).to match_files('a[')
         end
 
         it 'treats a escaped character class range as as a range' do
-          gitignore 'a[\\[-\\]]'
+          classify 'a[\\[-\\]]'
 
           expect(subject).to match_files('a]', 'a[')
           expect(subject).not_to match_files('a-')
         end
 
         it 'treats a negated escaped character class range as a range' do
-          gitignore 'a[^\\[-\\]]'
+          classify 'a[^\\[-\\]]'
 
           expect(subject).not_to match_files('a]', 'a[')
           expect(subject).to match_files('a-')
         end
 
         it 'treats an unnecessarily escaped character class range as a range' do
-          gitignore 'a[\\a-\\c]'
+          classify 'a[\\a-\\c]'
 
           expect(subject).to match_files('aa', 'ab', 'ac')
           expect(subject).not_to match_files('a-')
         end
 
         it 'treats a negated unnecessarily escaped character class range as a range' do
-          gitignore 'a[^\\a-\\c]'
+          classify 'a[^\\a-\\c]'
 
           expect(subject).not_to match_files('aa', 'ab', 'ac')
           expect(subject).to match_files('a-')
         end
 
         it 'treats a backward character class range with other options as only the first character of the range' do
-          gitignore 'a[d-ba]'
+          classify 'a[d-ba]'
 
           expect(subject).to match_files('aa', 'ad')
           expect(subject).not_to match_files('ac', 'ab', 'a-')
         end
 
         it 'treats a negated backward character class range with other options as the first character of the range' do
-          gitignore 'a[^d-ba]'
+          classify 'a[^d-ba]'
 
           expect(subject).not_to match_files('aa', 'ad')
           expect(subject).to match_files('ac', 'ab', 'a-')
         end
 
         it 'treats a backward char class range with other initial options as the first char of the range' do
-          gitignore 'a[ad-b]'
+          classify 'a[ad-b]'
 
           expect(subject).to match_files('aa', 'ad')
           expect(subject).not_to match_files('ac', 'ab', 'a-')
         end
 
         it 'treats a negated backward char class range with other initial options as the first char of the range' do
-          gitignore 'a[^ad-b]'
+          classify 'a[^ad-b]'
 
           expect(subject).not_to match_files('aa', 'ad')
           expect(subject).to match_files('ac', 'ab', 'a-')
         end
 
         it 'treats a equal character class range as only the first character of the range' do
-          gitignore 'a[d-d]'
+          classify 'a[d-d]'
 
           expect(subject).to match_files('ad')
           expect(subject).not_to match_files('aa', 'ac', 'ab', 'a-')
         end
 
         it 'treats a negated equal character class range as only the first character of the range' do
-          gitignore 'a[^d-d]'
+          classify 'a[^d-d]'
 
           expect(subject).not_to match_files('ad')
           expect(subject).to match_files('aa', 'ac', 'ab', 'a-')
         end
 
         it 'interprets a / after a character class range as not there' do
-          gitignore 'a[a-c/]'
+          classify 'a[a-c/]'
 
           expect(subject).not_to match_files('ad')
           expect(subject).to match_files('ab', 'aa', 'ac')
         end
 
         it 'interprets a / before a character class range as not there' do
-          gitignore 'a[/a-c]'
+          classify 'a[/a-c]'
 
           expect(subject).not_to match_files('ad')
           expect(subject).to match_files('ab', 'aa', 'ac')
         end
 
         it 'interprets a / before the dash in a character class range as any character from / to c' do
-          gitignore 'a[+/-c]'
+          classify 'a[+/-c]'
 
           # case insensitive match means 'd' is matched by the 'D' between '/' and 'c'.
           # so ad doesn't show up in either list because it depends on git case sensitivity
@@ -586,14 +586,14 @@ RSpec.describe FastIgnore do
         end
 
         it 'interprets a / after the dash in a character class range as any character from start to /' do
-          gitignore 'a["-/c]'
+          classify 'a["-/c]'
 
           expect(subject).not_to match_files('ab', 'aa', 'a[', 'ad', 'a^')
           expect(subject).to match_files('a+', 'a-', 'a$', 'ac') # +, -, $ are between " and /
         end
 
         it 'interprets a slash then dash then character to be a character range' do
-          gitignore 'a[/-c]'
+          classify 'a[/-c]'
 
           # case insensitive match means 'd' is matched by the 'D' between '/' and 'c'.
           # so ad doesn't show up in either list because it depends on git case sensitivity
@@ -602,7 +602,7 @@ RSpec.describe FastIgnore do
         end
 
         it 'interprets a character then dash then slash to be a character range' do
-          gitignore 'a["-/]'
+          classify 'a["-/]'
 
           expect(subject).not_to match_files('ab', 'ac', 'a[', 'ad', 'a^', 'aa', 'ab', 'ac')
           expect(subject).to match_files('a+', 'a-', 'a$')
@@ -616,35 +616,35 @@ RSpec.describe FastIgnore do
           # case insensitive match means 'd' is matched by the 'D' between '-' and 'c'.
           # so ad doesn't show up in either list because it depends on git case sensitivity
           it 'interprets dash dash character as a character range beginning with -' do
-            gitignore 'a[--c]'
+            classify 'a[--c]'
 
             expect(subject).not_to match_files('a+', 'a$')
             expect(subject).to match_files('a-', 'ab', 'ac', 'a[', 'a^', 'aa', 'ab', 'ac')
           end
 
           it 'interprets character dash dash as a character range ending with -' do
-            gitignore 'a["--]'
+            classify 'a["--]'
 
             expect(subject).not_to match_files('ab', 'ac', 'a[', 'ad', 'a^', 'aa', 'ab', 'ac')
             expect(subject).to match_files('a-', 'a+', 'a$')
           end
 
           it 'interprets dash dash dash as a character range of only with -' do
-            gitignore 'a[---]'
+            classify 'a[---]'
 
             expect(subject).not_to match_files('a+', 'a$', 'ab', 'ac', 'a[', 'ad', 'a^', 'aa', 'ab', 'ac')
             expect(subject).to match_files('a-')
           end
 
           it 'interprets character dash dash dash as a character range of only with " to - with literal -' do
-            gitignore 'a["---]'
+            classify 'a["---]'
 
             expect(subject).not_to match_files('ab', 'ac', 'a[', 'ad', 'a^', 'aa', 'ab', 'ac')
             expect(subject).to match_files('a+', 'a$', 'a-')
           end
 
           it 'interprets dash dash dash character as a character range of only - with literal c' do
-            gitignore 'a[---c]'
+            classify 'a[---c]'
 
             expect(subject).not_to match_files('ab', 'a[', 'ad', 'a^', 'aa', 'ab')
             expect(subject).to match_files('a-', 'ac')
@@ -653,7 +653,7 @@ RSpec.describe FastIgnore do
           it 'interprets character dash dash character as a character range ending with - and a literal c' do
             # this could just as easily be interpreted the other way around (" is the literal, --c is the range),
             # but ruby regex and git seem to tread this edge case the same
-            gitignore 'a["--c]'
+            classify 'a["--c]'
 
             expect(subject).not_to match_files('ab', 'a[', 'ad', 'a^', 'aa', 'ab')
             expect(subject).to match_files('a-', 'ac', 'a+', 'a$')
@@ -661,7 +661,7 @@ RSpec.describe FastIgnore do
         end
 
         it '^ is not' do
-          gitignore 'a[^a-c]'
+          classify 'a[^a-c]'
 
           expect(subject).to match_files('ad')
           expect(subject).not_to match_files('ab', 'aa', 'ac')
@@ -669,147 +669,147 @@ RSpec.describe FastIgnore do
 
         # this doesn't appear to be documented anywhere i just stumbled onto it
         it '! is also not' do
-          gitignore 'a[!a-c]'
+          classify 'a[!a-c]'
 
           expect(subject).to match_files('ad')
           expect(subject).not_to match_files('ab', 'aa', 'ac')
         end
 
         it '[^/] matches everything' do
-          gitignore 'a[^/]'
+          classify 'a[^/]'
 
           expect(subject).to match_files('aa', 'ab', 'ac', 'ad', 'a^')
         end
 
         it '[^^] matches everything except literal ^' do
-          gitignore 'a[^^]'
+          classify 'a[^^]'
 
           expect(subject).to match_files('aa', 'ab', 'ac', 'ad')
           expect(subject).not_to match_files('a^')
         end
 
         it '[^/a] matches everything except a' do
-          gitignore 'a[^/a]'
+          classify 'a[^/a]'
 
           expect(subject).to match_files('ab', 'ac', 'ad', 'a^')
           expect(subject).not_to match_files('aa')
         end
 
         it '[/^a] matches literal ^ and a' do
-          gitignore 'a[/^a]'
+          classify 'a[/^a]'
 
           expect(subject).not_to match_files('ab', 'ac', 'ad')
           expect(subject).to match_files('aa', 'a^')
         end
 
         it '[/^] matches literal ^' do
-          gitignore 'a[/^]'
+          classify 'a[/^]'
 
           expect(subject).to match_files('a^')
           expect(subject).not_to match_files('aa', 'ab', 'ac', 'ad')
         end
 
         it '[\\^] matches literal ^' do
-          gitignore 'a[\^]'
+          classify 'a[\^]'
 
           expect(subject).to match_files('a^')
           expect(subject).not_to match_files('aa', 'ab', 'ac', 'ad')
         end
 
         it 'later ^ is literal' do
-          gitignore 'a[a-c^]'
+          classify 'a[a-c^]'
 
           expect(subject).not_to match_files('ad')
           expect(subject).to match_files('ab', 'aa', 'ac', 'a^')
         end
 
         it "doesn't match a slash even if you specify it last" do
-          gitignore 'b[i/]b'
+          classify 'b[i/]b'
 
           expect(subject).not_to match_files('b/b')
           expect(subject).to match_files('bib')
         end
 
         it "doesn't match a slash even if you specify it alone" do
-          gitignore 'b[/]b'
+          classify 'b[/]b'
 
           expect(subject).not_to match_files('b/b', 'bb')
         end
 
         it 'empty class matches nothing' do
-          gitignore 'b[]b'
+          classify 'b[]b'
 
           expect(subject).not_to match_files('b/b', 'bb', 'aa', 'ab')
         end
 
         it 'multiple empty class matches nothing' do
-          gitignore 'b[]b', 'a[]a'
+          classify 'b[]b', 'a[]a'
 
           expect(subject).not_to match_files('b/b', 'bb', 'aa', 'ab')
         end
 
         it 'empty class matches nothing after a rule that is matchable' do
-          gitignore 'a*', 'b[]b'
+          classify 'a*', 'b[]b'
 
           expect(subject).not_to match_files('b/b', 'bb')
           expect(subject).to match_files('aa', 'ab')
         end
 
         it 'empty class matches nothing before a rule that is matchable' do
-          gitignore 'b[]b', 'a*'
+          classify 'b[]b', 'a*'
 
           expect(subject).not_to match_files('b/b', 'bb')
           expect(subject).to match_files('aa', 'ab')
         end
 
         it "doesn't match a slash even if you specify it middle" do
-          gitignore 'b[i/a]b'
+          classify 'b[i/a]b'
 
           expect(subject).not_to match_files('b/b')
           expect(subject).to match_files('bib', 'bab')
         end
 
         it "doesn't match a slash even if you specify it start" do
-          gitignore 'b[/ai]b'
+          classify 'b[/ai]b'
 
           expect(subject).not_to match_files('b/b')
           expect(subject).to match_files('bib', 'bab')
         end
 
         it 'assumes an unfinished [ matches nothing' do
-          gitignore 'a['
+          classify 'a['
 
           expect(subject).not_to match_files('aa', 'ab', 'ac', 'bib', 'b/b', 'bab', 'a[')
         end
 
         it 'assumes an unfinished [ followed by \ matches nothing' do
-          gitignore 'a[\\'
+          classify 'a[\\'
 
           expect(subject).not_to match_files('aa', 'ab', 'ac', 'bib', 'b/b', 'bab', 'a[')
         end
 
         it 'assumes an escaped [ is literal' do
-          gitignore 'a\['
+          classify 'a\['
 
           expect(subject).not_to match_files('aa', 'ab', 'ac', 'bib', 'b/b', 'bab')
           expect(subject).to match_files('a[')
         end
 
         it 'assumes an escaped [ is literal inside a group' do
-          gitignore 'a[\[]'
+          classify 'a[\[]'
 
           expect(subject).not_to match_files('aa', 'ab', 'ac', 'bib', 'b/b', 'bab')
           expect(subject).to match_files('a[')
         end
 
         it 'assumes an unfinished [ matches nothing when negated' do
-          gitignore '!a['
+          classify '!a['
 
           expect(subject).not_to match_files('aa', 'ab', 'ac', 'bib', 'b/b', 'bab', 'a[')
         end
 
         it 'assumes an unfinished [bc matches nothing' do
-          gitignore 'a[bc'
+          classify 'a[bc'
 
           expect(subject).not_to match_files('aa', 'ab', 'ac', 'bib', 'b/b', 'bab', 'a[', 'a[bc')
         end
@@ -823,7 +823,7 @@ RSpec.describe FastIgnore do
       before { create_file_list 'cat-file.c', 'mozilla-sha1/sha1.c' }
 
       it 'matches only at the beginning of everything' do
-        gitignore '/*.c'
+        classify '/*.c'
 
         expect(subject).not_to match_files('mozilla-sha1/sha1.c')
         expect(subject).to match_files('cat-file.c')
@@ -837,54 +837,54 @@ RSpec.describe FastIgnore do
         before { create_file_list 'foo', 'bar/foo', 'bar/bar/bar', 'bar/bar/foo/in_dir' }
 
         it 'matches files or directories in all directories' do
-          gitignore '**/foo'
+          classify '**/foo'
 
           expect(subject).not_to match_files('bar/bar/bar')
           expect(subject).to match_files('foo', 'bar/foo', 'bar/bar/foo/in_dir')
         end
 
         it 'matches nothing with double slash' do
-          gitignore '**//foo'
+          classify '**//foo'
 
           expect(subject).not_to match_files('bar/bar/bar', 'foo', 'bar/foo', 'bar/bar/foo/in_dir')
         end
 
         it 'matches all directories when only **/ (interpreted as ** then the trailing / for dir only)' do
-          gitignore '**/'
+          classify '**/'
 
           expect(subject).to match_files('bar/bar/bar', 'bar/foo', 'bar/bar/foo/in_dir')
           expect(subject).not_to match_files('foo')
         end
 
         it 'matches files or directories in all directories when repeated' do
-          gitignore '**/**/foo'
+          classify '**/**/foo'
 
           expect(subject).not_to match_files('bar/bar/bar')
           expect(subject).to match_files('foo', 'bar/foo', 'bar/bar/foo/in_dir')
         end
 
         it 'matches files or directories in all directories with **/*' do
-          gitignore '**/*'
+          classify '**/*'
 
           expect(subject).to match_files('bar/bar/bar', 'foo', 'bar/foo', 'bar/bar/foo/in_dir')
         end
 
         it 'matches files or directories in all directories when also followed by a star before text' do
-          gitignore '**/*foo'
+          classify '**/*foo'
 
           expect(subject).not_to match_files('bar/bar/bar')
           expect(subject).to match_files('foo', 'bar/foo', 'bar/bar/foo/in_dir')
         end
 
         it 'matches files or directories in all directories when also followed by a star within text' do
-          gitignore '**/f*o'
+          classify '**/f*o'
 
           expect(subject).not_to match_files('bar/bar/bar')
           expect(subject).to match_files('foo', 'bar/foo', 'bar/bar/foo/in_dir')
         end
 
         it 'matches files or directories in all directories when also followed by a star after text' do
-          gitignore '**/fo*'
+          classify '**/fo*'
 
           expect(subject).not_to match_files('bar/bar/bar')
           expect(subject).to match_files('foo', 'bar/foo')
@@ -892,33 +892,33 @@ RSpec.describe FastIgnore do
         end
 
         it 'matches files or directories in all directories when three stars' do
-          gitignore '***/foo'
+          classify '***/foo'
 
           expect(subject).not_to match_files('bar/bar/bar')
           expect(subject).to match_files('foo', 'bar/foo', 'bar/bar/foo/in_dir')
         end
       end
 
-      describe 'A trailing "/**" matches everything inside relative to the location of the .gitignore file.' do
+      describe 'A trailing "/**" matches everything inside relative to the location of the .classification file.' do
         # For example, "abc/**" matches all files inside directory "abc",
         before { create_file_list 'abc/bar', 'abc/foo/bar', 'bar/abc/foo', 'bar/bar/foo' }
 
         it 'matches files or directories inside the mentioned directory' do
-          gitignore 'abc/**'
+          classify 'abc/**'
 
           expect(subject).not_to match_files('bar/bar/foo', 'bar/abc/foo')
           expect(subject).to match_files('abc/bar', 'abc/foo/bar')
         end
 
         it 'matches all directories inside the mentioned directory' do
-          gitignore 'abc/**/'
+          classify 'abc/**/'
 
           expect(subject).not_to match_files('abc/bar', 'bar/bar/foo', 'bar/abc/foo')
           expect(subject).to match_files('abc/foo/bar')
         end
 
         it 'matches files or directories inside the mentioned directory when ***' do
-          gitignore 'abc/***'
+          classify 'abc/***'
 
           expect(subject).not_to match_files('bar/bar/foo', 'bar/abc/foo')
           expect(subject).to match_files('abc/bar', 'abc/foo/bar')
@@ -930,14 +930,14 @@ RSpec.describe FastIgnore do
         before { create_file_list 'a/b', 'a/x/b', 'a/x/y/b', 'z/a/b', 'z/a/x/b', 'z/y' }
 
         it 'matches multiple intermediate dirs' do
-          gitignore 'a/**/b'
+          classify 'a/**/b'
 
           expect(subject).not_to match_files('z/y', 'z/a/b', 'z/a/x/b')
           expect(subject).to match_files('a/b', 'a/x/b', 'a/x/y/b')
         end
 
         it 'matches multiple intermediate dirs when ***' do
-          gitignore 'a/***/b'
+          classify 'a/***/b'
 
           expect(subject).not_to match_files('z/y', 'z/a/b', 'z/a/x/b')
           expect(subject).to match_files('a/b', 'a/x/b', 'a/x/y/b')
@@ -950,28 +950,28 @@ RSpec.describe FastIgnore do
             before { create_file_list 'f/our', 'few', 'four', 'fewer', 'favour', 'file/four' }
 
             it 'matches any number of characters at the beginning' do
-              gitignore '**our'
+              classify '**our'
 
               expect(subject).not_to match_files('few', 'fewer')
               expect(subject).to match_files('f/our', 'four', 'favour')
             end
 
             it "doesn't match a slash" do
-              gitignore 'f**our'
+              classify 'f**our'
 
               expect(subject).not_to match_files('few', 'fewer', 'f/our')
               expect(subject).to match_files('four', 'favour')
             end
 
             it 'matches any number of characters in the middle' do
-              gitignore 'f**r'
+              classify 'f**r'
 
               expect(subject).not_to match_files('f/our', 'few')
               expect(subject).to match_files('four', 'fewer', 'favour')
             end
 
             it 'matches any number of characters at the end' do
-              gitignore 'few**'
+              classify 'few**'
 
               expect(subject).not_to match_files('f/our', 'four', 'favour')
               expect(subject).to match_files('few', 'fewer')
@@ -979,14 +979,14 @@ RSpec.describe FastIgnore do
 
             # not sure if this is a bug but this is git behaviour
             it 'matches any number of directories including none, when following a character' do
-              gitignore 'f**/our'
+              classify 'f**/our'
 
               expect(subject).not_to match_files('few', 'fewer', 'favour')
               expect(subject).to match_files('four', 'f/our')
             end
 
             it 'anchors, when following a character' do
-              gitignore 'f**/our'
+              classify 'f**/our'
 
               expect(subject).not_to match_files('few', 'fewer', 'favour', 'file/four')
               expect(subject).to match_files('four', 'f/our')
@@ -1001,7 +1001,7 @@ RSpec.describe FastIgnore do
     subject { described_class.new(relative: true, **args) }
 
     let(:args) { {} }
-    let(:gitignore_path) { File.join(root, '.gitignore') }
+    let(:gitignore_path) { File.join(root, '.classification') }
 
     describe 'gitignore: true' do
       it_behaves_like 'the gitignore documentation'
@@ -1093,7 +1093,7 @@ RSpec.describe FastIgnore do
       let(:include_files) { include_path }
 
       let(:args) { {} }
-      let(:include_path) { File.join(root, '.gitignore') }
+      let(:include_path) { File.join(root, '.classification') }
 
       it_behaves_like 'the gitignore documentation'
 
@@ -1145,7 +1145,7 @@ RSpec.describe FastIgnore do
         $doing_include = false
       end
 
-      let(:include_path) { File.join(root, '.gitignore') }
+      let(:include_path) { File.join(root, '.classification') }
       let(:include_read) { File.exist?(include_path) ? File.read(include_path) : '' }
       let(:args) { {} }
 
