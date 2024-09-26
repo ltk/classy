@@ -6,7 +6,7 @@ RubyProf.measure_mode = RubyProf::WALL_TIME
 # RubyProf.measure_mode = RubyProf::ALLOCATIONS
 # RubyProf.measure_mode = RubyProf::MEMORY
 
-GITIGNORE_DIRS = Dir.glob('**/.classification').map { |f| ::File.dirname(f) + '/' } - ['./']
+GITIGNORE_DIRS = Dir.glob('**/.unclassified').map { |f| ::File.dirname(f) + '/' } - ['./']
 
 RubyProf.start
 

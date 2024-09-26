@@ -70,19 +70,19 @@ RSpec.describe Classification do
       end
 
       context 'when no global gitignore' do
-        it 'recognises project subdir .classification file and no project dir gitignore' do
+        it 'recognises project subdir .unclassified file and no project dir gitignore' do
           classify ''
-          classify '/b/c', path: 'a/.classification'
-          classify 'd', path: 'b/.classification'
+          classify '/b/c', path: 'a/.unclassified'
+          classify 'd', path: 'b/.unclassified'
 
           expect(subject).not_to match_files('a/b/d', 'b/c')
           expect(subject).to match_files('a/b/c', 'b/d')
         end
 
-        it 'recognises project subdir .classification file when one is empty when no project dir gitignore' do
+        it 'recognises project subdir .unclassified file when one is empty when no project dir gitignore' do
           classify ''
-          classify '#this is just a comment', path: 'a/.classification'
-          classify '/d', path: 'a/b/.classification'
+          classify '#this is just a comment', path: 'a/.unclassified'
+          classify '/d', path: 'a/b/.unclassified'
 
           expect(subject).not_to match_files('b/c', 'a/b/c', 'b/d', 'b/d')
           expect(subject).to match_files('a/b/d')
@@ -104,7 +104,7 @@ RSpec.describe Classification do
     end
 
     context 'when ignore_files is outside root' do
-      let(:args) { { root: 'a', ignore_files: '../.classification' } }
+      let(:args) { { root: 'a', ignore_files: '../.unclassified' } }
 
       it 'copes fine' do
         classify 'a/b'
@@ -115,9 +115,9 @@ RSpec.describe Classification do
     end
 
     it 'returns hidden files' do
-      create_file_list '.classification', '.a', '.b/.c'
+      create_file_list '.unclassified', '.a', '.b/.c'
 
-      expect(subject).to allow_exactly('.classification', '.a', '.b/.c')
+      expect(subject).to allow_exactly('.unclassified', '.a', '.b/.c')
     end
 
     it '#allowed? returns false nonexistent files' do
@@ -160,9 +160,9 @@ RSpec.describe Classification do
       let(:args) { { gitignore: false } }
 
       it 'returns hidden files' do
-        create_file_list '.classification', '.a', '.b/.c'
+        create_file_list '.unclassified', '.a', '.b/.c'
 
-        expect(subject).to allow_exactly('.classification', '.a', '.b/.c')
+        expect(subject).to allow_exactly('.unclassified', '.a', '.b/.c')
       end
 
       it '#allowed? returns false nonexistent files' do
@@ -210,79 +210,79 @@ RSpec.describe Classification do
     end
 
     it 'rescues soft links to nowhere' do
-      create_file_list 'foo_target', '.classification'
+      create_file_list 'foo_target', '.unclassified'
       create_symlink('foo' => 'foo_target')
       FileUtils.rm('foo_target')
 
       expect(subject).not_to be_allowed('foo')
       expect(subject).not_to be_allowed('foo', directory: true)
-      expect(subject.select { |x| File.read(x) }.to_a).to contain_exactly('.classification')
+      expect(subject.select { |x| File.read(x) }.to_a).to contain_exactly('.unclassified')
     end
 
     it 'rescues soft link loops' do
-      create_file_list 'foo_target', '.classification'
+      create_file_list 'foo_target', '.unclassified'
       create_symlink('foo' => 'foo_target')
       FileUtils.rm('foo_target')
       create_symlink('foo_target' => 'foo')
 
       expect(subject).not_to be_allowed('foo')
       expect(subject).not_to be_allowed('foo', directory: true)
-      expect(subject.select { |x| File.read(x) }.to_a).to contain_exactly('.classification')
+      expect(subject.select { |x| File.read(x) }.to_a).to contain_exactly('.unclassified')
     end
 
     it 'allows soft links to directories' do
-      create_file_list 'foo_target/foo_child', '.classification'
+      create_file_list 'foo_target/foo_child', '.unclassified'
       classify 'foo_target'
 
       create_symlink('foo' => 'foo_target')
-      expect(subject).to allow_exactly('foo', '.classification')
+      expect(subject).to allow_exactly('foo', '.unclassified')
     end
 
     it 'allows soft links' do
-      create_file_list 'foo_target', '.classification'
+      create_file_list 'foo_target', '.unclassified'
       create_symlink('foo' => 'foo_target')
 
-      expect(subject).to allow_exactly('foo', 'foo_target', '.classification')
+      expect(subject).to allow_exactly('foo', 'foo_target', '.unclassified')
     end
 
     context 'with follow_symlinks: true' do
       let(:args) { { follow_symlinks: true } }
 
       it 'ignores soft links to nowhere' do
-        create_file_list 'foo_target', '.classification'
+        create_file_list 'foo_target', '.unclassified'
         create_symlink('foo' => 'foo_target')
         FileUtils.rm('foo_target')
 
         expect(subject).not_to allow_files('foo', 'foo_target')
-        expect(subject).to allow_files('.classification')
+        expect(subject).to allow_files('.unclassified')
       end
 
       context 'with gitignore: false' do
         let(:args) { { follow_symlinks: true, gitignore: false } }
 
         it 'ignores soft links to nowhere' do
-          create_file_list 'foo_target', '.classification'
+          create_file_list 'foo_target', '.unclassified'
           create_symlink('foo' => 'foo_target')
           FileUtils.rm('foo_target')
 
           expect(subject).not_to allow_files('foo', 'foo_target')
-          expect(subject).to allow_files('.classification')
+          expect(subject).to allow_files('.unclassified')
         end
       end
 
       it 'allows soft links to directories' do
-        create_file_list 'foo_target/foo_child', '.classification'
+        create_file_list 'foo_target/foo_child', '.unclassified'
         classify 'foo_target'
 
         create_symlink('foo' => 'foo_target')
-        expect(subject).to allow_exactly('foo/foo_child', '.classification')
+        expect(subject).to allow_exactly('foo/foo_child', '.unclassified')
       end
 
       it 'allows soft links' do
-        create_file_list 'foo_target', '.classification'
+        create_file_list 'foo_target', '.unclassified'
         create_symlink('foo' => 'foo_target')
 
-        expect(subject).to allow_exactly('foo', 'foo_target', '.classification')
+        expect(subject).to allow_exactly('foo', 'foo_target', '.unclassified')
       end
     end
 
@@ -511,7 +511,7 @@ RSpec.describe Classification do
         classify 'baz'
 
         Dir.chdir('bar') do
-          expect(subject).to allow_exactly('bar/foo', 'fez', '.classification')
+          expect(subject).to allow_exactly('bar/foo', 'fez', '.unclassified')
         end
       end
     end
@@ -820,7 +820,7 @@ RSpec.describe Classification do
 
         create_file_list 'sub/baz', 'sub/baz.rb'
 
-        classify 'ignored_foo', path: 'sub/.classification'
+        classify 'ignored_foo', path: 'sub/.unclassified'
 
         expect(subject).to allow_files('foo')
         expect(subject).not_to allow_files('ignored_foo', 'bar', 'baz', 'baz.rb')

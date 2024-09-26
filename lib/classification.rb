@@ -34,9 +34,13 @@ class Classification
 
   include ::Enumerable
 
-  DOTFILE_NAME = '.classification'
+  DOTFILE_NAME = '.unclassified'
 
   attr_reader :root
+
+  def self.unclassified_files(relative: false, root: nil, **rule_group_builder_args)
+    new(relative: relative, root: root, **rule_group_builder_args)
+  end
 
   def initialize(relative: false, root: nil, **rule_group_builder_args)
     @root = "#{::File.expand_path(root.to_s, Dir.pwd)}/"

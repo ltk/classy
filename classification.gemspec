@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.authors = ['Lawson Jaglom-Kurtz']
   spec.email = ['lawson.jaglomkurtz@shopify.com']
 
-  spec.summary = 'Parse .classification files to determine file classification in a file tree. Based on fast_ignore by Dana Sherson<robot@dana.sh>'
+  spec.summary = 'Parse .unclassified files to determine file classification in a file tree. Based on fast_ignore by Dana Sherson<robot@dana.sh>'
   spec.homepage = 'https://github.com/ltk/classy'
   spec.license = 'MIT'
 

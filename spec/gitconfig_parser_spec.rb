@@ -49,40 +49,40 @@ RSpec.describe Classification::GitconfigParser do
   it 'returns value for file with excludesfile' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file with excludesfile after other stuff' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
         mergeoptions = --no-edit
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file with excludesfile before other stuff' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
         mergeoptions = --no-edit
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file with excludesfile after boolean true key' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
         ignoreCase
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file with [core] after other stuff' do
@@ -91,28 +91,28 @@ RSpec.describe Classification::GitconfigParser do
         url = https://github.com/robotdana/fast_ignore.git
         fetch = +refs/heads/*:refs/remotes/origin/*
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file with [core] before other stuff' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
       [remote "origin"]
         url = https://github.com/robotdana/fast_ignore.git
         fetch = +refs/heads/*:refs/remotes/origin/*
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns nil for file with commented excludesfile line' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-      #  excludesfile = ~/.classification
+      #  excludesfile = ~/.unclassified
     GITCONFIG
 
     expect(described_class.parse('.gitconfig')).to eq(nil)
@@ -504,10 +504,10 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file when includeif onbranch' do
@@ -520,10 +520,10 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file when includeif onbranch pattern' do
@@ -536,10 +536,10 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file when includeif onbranch pattern ending in /' do
@@ -552,10 +552,10 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns nil for file when includeif onbranch is not the right branch' do
@@ -568,7 +568,7 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
     expect(described_class.parse('.gitconfig')).to be_nil
@@ -584,7 +584,7 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
     expect(described_class.parse('.gitconfig')).to be_nil
@@ -598,7 +598,7 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
     expect(described_class.parse('.gitconfig')).to be_nil
@@ -613,7 +613,7 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
     expect { described_class.parse('.gitconfig') }.to raise_error ::Classification::GitconfigParseError
@@ -628,7 +628,7 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
     expect { described_class.parse('.gitconfig') }.to raise_error ::Classification::GitconfigParseError
@@ -642,7 +642,7 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
     expect { described_class.parse('.gitconfig') }.to raise_error ::Classification::GitconfigParseError
@@ -656,10 +656,10 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file when includeif gitdir/i matches leading **/' do
@@ -670,10 +670,10 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns value for file when includeif gitdir matches trailing /' do
@@ -684,19 +684,19 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it "doesn't leak the section for file when included" do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
       [include]
         path = .gitconfig_include
-        excludesfile = ~/.classification2
+        excludesfile = ~/.unclassified2
     GITCONFIG
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
@@ -704,23 +704,23 @@ RSpec.describe Classification::GitconfigParser do
         attributesfile = ~/.gitattributes
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'returns the most recent value when included' do
     create_file(<<~GITCONFIG, path: '.gitconfig')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
       [include]
         path = .gitconfig_include
     GITCONFIG
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification2
+        excludesfile = ~/.unclassified2
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification2')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified2')
   end
 
   it 'returns the most recent value after included' do
@@ -729,15 +729,15 @@ RSpec.describe Classification::GitconfigParser do
       [include]
         path = .gitconfig_include
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include')
       [core]
-        excludesfile = ~/.classification2
+        excludesfile = ~/.unclassified2
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 
   it 'raises when including itself' do
@@ -762,9 +762,9 @@ RSpec.describe Classification::GitconfigParser do
 
     create_file(<<~GITCONFIG, path: '.gitconfig_include_2')
       [core]
-        excludesfile = ~/.classification
+        excludesfile = ~/.unclassified
     GITCONFIG
 
-    expect(described_class.parse('.gitconfig')).to eq('~/.classification')
+    expect(described_class.parse('.gitconfig')).to eq('~/.unclassified')
   end
 end

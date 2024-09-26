@@ -6,7 +6,7 @@ RSpec.describe Classification do
   let(:root) { Dir.pwd }
 
   shared_examples 'gitignore: true' do
-    describe 'Patterns read from a .classification file in the same directory as the path, or in any parent directory' do
+    describe 'Patterns read from a .unclassified file in the same directory as the path, or in any parent directory' do
       # (up to the toplevel of the work tree) # we consider root the root
 
       describe 'with patterns in the higher level files being overridden by those in lower level files.' do
@@ -16,25 +16,25 @@ RSpec.describe Classification do
 
         it 'matches files in context by files' do
           classify '**/b/d'
-          classify 'b/c', path: 'a/.classification'
+          classify 'b/c', path: 'a/.unclassified'
 
-          expect(subject).not_to match_files('b/c', 'a/.classification')
+          expect(subject).not_to match_files('b/c', 'a/.unclassified')
           expect(subject).to match_files('a/b/d', 'a/b/c', 'b/d')
         end
 
         it 'overrides parent rules in lower level files' do
           classify '**/b/d'
-          classify '!b/d', 'b/c', path: 'a/.classification'
+          classify '!b/d', 'b/c', path: 'a/.unclassified'
 
-          expect(subject).not_to match_files('a/b/d', 'b/c', 'a/.classification')
+          expect(subject).not_to match_files('a/b/d', 'b/c', 'a/.unclassified')
           expect(subject).to match_files('a/b/c', 'b/d')
         end
 
         it 'overrides parent negations in lower level files' do
           classify '**/b/*', '!**/b/d'
-          classify 'b/d', '!b/c', path: 'a/.classification'
+          classify 'b/d', '!b/c', path: 'a/.unclassified'
 
-          expect(subject).not_to match_files('b/d', 'a/b/c', 'a/.classification')
+          expect(subject).not_to match_files('b/d', 'a/b/c', 'a/.unclassified')
           expect(subject).to match_files('b/c', 'a/b/d')
         end
       end
@@ -55,7 +55,7 @@ RSpec.describe Classification do
     end
 
     it 'ignore .git by default' do
-      create_file_list '.classification', '.git/WHATEVER', 'WHATEVER'
+      create_file_list '.unclassified', '.git/WHATEVER', 'WHATEVER'
 
       expect(subject).to match_files('.git/WHATEVER')
       expect(subject).not_to match_files('WHATEVER')
@@ -66,7 +66,7 @@ RSpec.describe Classification do
     subject { described_class.new(relative: true, **args) }
 
     let(:args) { {} }
-    let(:gitignore_path) { File.join(root, '.classification') }
+    let(:gitignore_path) { File.join(root, '.unclassified') }
 
     it_behaves_like 'gitignore: true'
   end

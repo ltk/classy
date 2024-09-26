@@ -15,7 +15,7 @@ RSpec.describe Classification do
         gitignore
 
         expect(subject).to allow_files('foo', 'bar', 'baz')
-        expect(subject).not_to allow_files('/.classification') # files outside root are not allowed
+        expect(subject).not_to allow_files('/.unclassified') # files outside root are not allowed
       end
 
       # an empty list matches everything for include rules
@@ -172,13 +172,13 @@ RSpec.describe Classification do
     end
 
     # The slash / is used as the directory separator.
-    # Separators may occur at the beginning, middle or end of the .classification search pattern.
+    # Separators may occur at the beginning, middle or end of the .unclassified search pattern.
     describe 'If there is a separator at the beginning or middle (or both) of the pattern' do
       before { create_file_list 'doc/frotz/b', 'a/doc/frotz/c', 'd/doc/frotz' }
 
-      describe 'then the pattern is relative to the directory level of the particular .classification file itself.' do
+      describe 'then the pattern is relative to the directory level of the particular .unclassified file itself.' do
         # For example, a pattern doc/frotz/ matches doc/frotz directory, but not a/doc/frotz directory;
-        # The pattern doc/frotz and /doc/frotz have the same effect in any .classification file.
+        # The pattern doc/frotz and /doc/frotz have the same effect in any .unclassified file.
         # In other words, a leading slash is not relevant if there is already a middle slash in the pattern.
         it 'includes files relative to the git dir with a middle slash' do
           classify 'doc/frotz'
@@ -194,7 +194,7 @@ RSpec.describe Classification do
         end
       end
 
-      describe 'Otherwise the pattern may also match at any level below the .classification level.' do
+      describe 'Otherwise the pattern may also match at any level below the .unclassified level.' do
         # frotz/ matches frotz and a/frotz that is a directory
 
         it 'includes files relative to anywhere with only an end slash' do
@@ -899,7 +899,7 @@ RSpec.describe Classification do
         end
       end
 
-      describe 'A trailing "/**" matches everything inside relative to the location of the .classification file.' do
+      describe 'A trailing "/**" matches everything inside relative to the location of the .unclassified file.' do
         # For example, "abc/**" matches all files inside directory "abc",
         before { create_file_list 'abc/bar', 'abc/foo/bar', 'bar/abc/foo', 'bar/bar/foo' }
 
@@ -1001,7 +1001,7 @@ RSpec.describe Classification do
     subject { described_class.new(relative: true, **args) }
 
     let(:args) { {} }
-    let(:gitignore_path) { File.join(root, '.classification') }
+    let(:gitignore_path) { File.join(root, '.unclassified') }
 
     describe 'gitignore: true' do
       it_behaves_like 'the gitignore documentation'
@@ -1093,7 +1093,7 @@ RSpec.describe Classification do
       let(:include_files) { include_path }
 
       let(:args) { {} }
-      let(:include_path) { File.join(root, '.classification') }
+      let(:include_path) { File.join(root, '.unclassified') }
 
       it_behaves_like 'the gitignore documentation'
 
@@ -1145,7 +1145,7 @@ RSpec.describe Classification do
         $doing_include = false
       end
 
-      let(:include_path) { File.join(root, '.classification') }
+      let(:include_path) { File.join(root, '.unclassified') }
       let(:include_read) { File.exist?(include_path) ? File.read(include_path) : '' }
       let(:args) { {} }
 
