@@ -31,7 +31,7 @@ module TempDirHelper
       end
     end
 
-    def classify(*lines, path: ::Classification::DOTFILE_NAME)
+    def classify(*lines, path: ::Classy::DOTFILE_NAME)
       create_file(*lines, path: path)
     end
   end

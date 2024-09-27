@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Classification
+module Classy
   class PathRegexpBuilder
     def initialize
       @string = +''

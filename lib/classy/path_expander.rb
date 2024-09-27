@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Classification
+module Classy
   module PathExpander
     def self.expand_path(path, dir)
       ::File.expand_path(path, dir)

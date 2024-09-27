@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-class Classification
-  class GitignoreRuleBuilder # rubocop:disable Metrics/ClassLength
+module Classy
+  class MatcherBuilder # rubocop:disable Metrics/ClassLength
     def initialize(rule, expand_path_with: nil)
-      @re = ::Classification::PathRegexpBuilder.new
-      @s = ::Classification::GitignoreRuleScanner.new(rule)
+      @re = PathRegexpBuilder.new
+      @s = MatchScanner.new(rule)
 
       @expand_path_with = expand_path_with
       @negation = false
@@ -176,7 +176,7 @@ class Classification
     end
 
     def prefix
-      out = ::Classification::PathRegexpBuilder.new
+      out = PathRegexpBuilder.new
 
       if @anchored
         out.append_start_anchor
@@ -189,9 +189,9 @@ class Classification
     def build_rule
       @re.prepend(prefix)
       if @negation
-        ::Classification::Matchers::AllowPathRegexp.new(@re.to_regexp, @anchored, @dir_only)
+        Matchers::ClassifiedPathRegexp.new(@re.to_regexp, @anchored, @dir_only)
       else
-        ::Classification::Matchers::IgnorePathRegexp.new(@re.to_regexp, @anchored, @dir_only)
+        Matchers::UnclassifiedPathRegexp.new(@re.to_regexp, @anchored, @dir_only)
       end
     end
 

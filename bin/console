@@ -2,7 +2,12 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
-require 'classification'
+require 'classy'
 
 require 'pry'
+
 Pry.start
+
+# dir = Classy.root.children.find { |c| c.path.to_path =~ /sample/ }
+# pub = dir.children.find { |c| c.path.to_path =~ /public/ }
+# priv = dir.children.find { |c| c.path.to_path =~ /secret/ }

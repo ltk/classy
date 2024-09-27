@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-class Classification
+module Classy
   module Matchers
-    class IgnorePathRegexp
+    class UnclassifiedPathRegexp
       attr_reader :dir_only
       alias_method :dir_only?, :dir_only
       undef :dir_only
@@ -14,7 +14,7 @@ class Classification
         @rule = rule
         @dir_only = dir_only
         @anchored = anchored
-        @squash_id = anchored ? :ignore : object_id
+        @squash_id = anchored ? :unclassified : object_id
 
         freeze
       end
@@ -33,12 +33,14 @@ class Classification
 
       # :nocov:
       def inspect
-        "#<IgnorePathRegexp #{'dir_only ' if @dir_only}#{@rule.inspect}>"
+        "#<UnclassifiedPathRegexp #{'dir_only ' if @dir_only}#{@rule.inspect}>"
       end
       # :nocov:
 
-      def match?(candidate)
-        :ignore if @rule.match?(candidate.relative_path)
+      def match?(rule_base_path, file_full_path)
+        relative_path = file_full_path.relative_path_from(rule_base_path).to_path
+
+        :unclassified if @rule.match?(relative_path)
       end
     end
   end

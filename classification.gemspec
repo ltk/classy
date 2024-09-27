@@ -2,11 +2,11 @@
 
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'classification/version'
+require 'classy/version'
 
 Gem::Specification.new do |spec|
-  spec.name = 'classification'
-  spec.version = Classification::VERSION
+  spec.name = 'classy'
+  spec.version = Classy::VERSION
   spec.authors = ['Lawson Jaglom-Kurtz']
   spec.email = ['lawson.jaglomkurtz@shopify.com']
 
@@ -23,6 +23,8 @@ Gem::Specification.new do |spec|
   end
 
   spec.files = Dir.glob('lib/**/*') + ['CHANGELOG.md', 'LICENSE.txt', 'README.md']
+  spec.bindir = 'exe'
+  spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
   spec.add_development_dependency 'bundler', '>= 1.17'

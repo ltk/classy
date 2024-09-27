@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
-class Classification
-  class GitignoreRuleScanner < StringScanner
+require 'strscan'
+
+module Classy
+  class MatchScanner < StringScanner
     def character_class_end?
       skip(/\]/)
     end

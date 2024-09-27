@@ -1,15 +1,23 @@
 # frozen_string_literal: true
 
-class Classification
+module Classy
   module Matchers
-    module Unmatchable
+    module ClassifiedAnyDir
       class << self
+        def squash_id
+          :classified_any_dir
+        end
+
         def dir_only?
-          false
+          true
         end
 
         def file_only?
           false
+        end
+
+        def squash(_)
+          self
         end
 
         def weight
@@ -18,12 +26,12 @@ class Classification
 
         # :nocov:
         def inspect
-          '#<Unmatchable>'
+          '#<AllowAnyDir>'
         end
         # :nocov:
 
         def match?(_)
-          false
+          :classified
         end
       end
     end

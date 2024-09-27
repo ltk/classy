@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Classification
+module Classy
   module Matchers
     class WithinDir
       attr_reader :weight
@@ -36,8 +36,8 @@ class Classification
       def squash_matchers(matchers)
         return matchers if matchers.empty?
 
-        matchers -= [::Classification::Matchers::Unmatchable]
-        return [::Classification::Matchers::Unmatchable] if matchers.empty?
+        matchers -= [Matchers::Unmatchable]
+        return [Matchers::Unmatchable] if matchers.empty?
 
         matchers.chunk_while { |a, b| a.squash_id == b.squash_id }.map do |chunk|
           next chunk.first if chunk.length == 1
