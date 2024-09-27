@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
     spec.metadata['changelog_uri'] = "#{spec.homepage}/blob/main/CHANGELOG.md"
   end
 
-  spec.files = Dir.glob('lib/**/*') + ['CHANGELOG.md', 'LICENSE.txt', 'README.md']
+  spec.files = Dir.glob('lib/**/*') + Dir.glob('exe/*') + ['CHANGELOG.md', 'LICENSE.txt', 'README.md']
   spec.bindir = 'exe'
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
