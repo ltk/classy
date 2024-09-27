@@ -1,5 +1,4 @@
 require 'pathname'
-require 'pry'
 
 require_relative 'classy/node'
 require_relative 'classy/rule'
