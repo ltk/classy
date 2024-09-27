@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Classy
-  VERSION = '1.0.2'
+  VERSION = '1.0.3'
 end

@@ -41,7 +41,7 @@ module Classy
   end
 
   def self.cli(args)
-    first_arg = args.first.strip
+    first_arg = args.first&.strip
     case first_arg
     when 'ls'
       puts ls_unclassified_files
