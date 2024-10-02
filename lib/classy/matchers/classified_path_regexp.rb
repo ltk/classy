@@ -39,7 +39,11 @@ module Classy
 
       def match?(rule_base_path, file_full_path)
         relative_path = file_full_path.relative_path_from(rule_base_path).to_path
-        :classified if @rule.match?(relative_path)
+        if @rule.match?(relative_path)
+          :classified
+        else
+          :unclassified
+        end
       end
     end
   end

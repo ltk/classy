@@ -27,16 +27,16 @@ By default, Classy considers all files to be `classified`. You can indicate that
 
 ### CLI
 
-A CLI tool is provided as a binstub named `cls`. To execute it, run `bundle exec cls`.
+A CLI tool is provided as a binstub named `cls`. To execute it, run `bin/cls`.
 
 #### `ls`
 
 Lists all `unclassified` file paths in your directory. Similar to `git ls-files`.
 
-e.g. `bundle exec cls ls`
+e.g. `bin/cls ls`
 
 #### `test`
 
 Returns the classification of the specified file.
 
-e.g. `bundle exec cls test README.md`
+e.g. `bin/cls test README.md`

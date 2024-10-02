@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Classy
   class Rule
     attr_reader :base_path

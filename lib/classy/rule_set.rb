@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Classy
   class RuleSet
     def initialize(path:)

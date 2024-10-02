@@ -51,10 +51,11 @@ RSpec::Matchers.define(:allow_files) do |*expected|
 end
 
 RSpec::Matchers.define(:allow_exactly) do |*expected|
+  full_expected = expected.map { |e| Pathname.new(e).expand_path.to_path }
   match do |actual|
     @actual = actual.to_a
-    expect(@actual).to contain_exactly(*expected)
-    expect(actual).to allow_files(*expected)
+    expect(@actual).to contain_exactly(*full_expected)
+    expect(actual).to allow_files(*full_expected)
 
     true
   end

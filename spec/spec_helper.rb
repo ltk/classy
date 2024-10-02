@@ -3,7 +3,7 @@
 if RUBY_PLATFORM != 'java'
   module Warning # leftovers:allow
     def warn(msg) # leftovers:allow
-      raise msg unless msg.include?('Classification deprecation:')
+      raise msg unless msg.include?('Classy deprecation:')
     end
   end
 end
@@ -14,14 +14,12 @@ require 'fileutils'
 FileUtils.rm_rf(File.join(__dir__, '..', 'coverage'))
 
 require 'bundler/setup'
+require 'pry'
 
 require 'simplecov' if ENV['COVERAGE']
-require 'classification'
+require 'classy'
 
 require_relative 'support/temp_dir_helper'
-require_relative 'support/stub_env_helper'
-require_relative 'support/stub_file_helper'
-require_relative 'support/stub_global_gitignore_helper'
 require_relative 'support/matchers'
 
 RSpec.configure do |config|
@@ -32,10 +30,6 @@ RSpec.configure do |config|
 
   config.mock_with :rspec do |c|
     c.verify_partial_doubles = true
-  end
-
-  config.before do
-    stub_blank_global_config
   end
 
   config.example_status_persistence_file_path = '.rspec_status'
